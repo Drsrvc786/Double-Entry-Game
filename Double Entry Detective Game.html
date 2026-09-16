@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Double-Entry Detective | T-Account Case Files</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root{
+    --ink:#122421;
+    --paper:#F6F1E4;
+    --paper-line:#d8cfb4;
+    --teal-deep:#0E3B39;
+    --teal:#155E56;
+    --teal-light:#1F8A7A;
+    --gold:#E8A33D;
+    --gold-deep:#C97F1E;
+    --coral:#E85D4E;
+    --green-ok:#2E9E5B;
+    --blue-badge:#3B6FA0;
+    --card-shadow: 0 8px 18px rgba(14,59,57,0.16);
+    --radius: 12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0; height:100%;}
+  body{
+    font-family:'Nunito',sans-serif;
+    font-size:18.5px;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 10%, rgba(232,163,61,0.10), transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(31,138,122,0.14), transparent 45%),
+      var(--paper);
+    display:flex; flex-direction:column;
+    height:100vh; overflow:hidden;
+  }
+  h1,h2,h3{font-family:'Baloo 2',sans-serif; margin:0;}
+
+  /* ===== TOP BAR (compact) ===== */
+  .topbar{
+    flex:0 0 auto;
+    background: linear-gradient(120deg, var(--teal-deep), var(--teal) 60%, var(--teal-light));
+    color:#fff;
+    padding:12px 22px;
+    border-bottom:5px solid var(--gold);
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .topbar-left{display:flex; align-items:center; gap:12px;}
+  .topbar h1{font-size:23px; white-space:nowrap;}
+  .topbar .sub{font-size:14.5px; opacity:0.92; max-width:480px; line-height:1.3;}
+
+  #globalExitBtn{
+    font-family:'Baloo 2'; font-weight:700; font-size:14.5px; color:#fff;
+    background:var(--coral); border:2px solid rgba(255,255,255,0.5); border-radius:999px;
+    padding:8px 16px; cursor:pointer; box-shadow:0 4px 0 #a5372a; white-space:nowrap;
+  }
+  #globalExitBtn:active{transform:translateY(3px); box-shadow:none;}
+  .badge-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .pill{
+    background:rgba(255,255,255,0.14);
+    border:1.5px solid rgba(255,255,255,0.4);
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:14.5px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+
+  /* ===== APP BODY ===== */
+  #appBody{flex:1 1 auto; display:flex; overflow:hidden; min-height:0;}
+
+  /* ===== SIDEBAR ===== */
+  #sidebar{
+    width:245px; flex:0 0 245px; background:#fff; border-right:3px solid var(--teal-deep);
+    overflow-y:auto; padding:14px 12px; display:none;
+  }
+  .cat-group{margin-bottom:14px;}
+  .cat-head{
+    display:flex; align-items:center; justify-content:space-between; font-family:'Baloo 2';
+    font-size:15.5px; font-weight:700; color:var(--teal-deep); padding:4px 2px 6px;
+    border-bottom:2px dashed var(--paper-line); margin-bottom:6px;
+  }
+  .cat-head .cat-frac{font-size:13px; background:var(--paper); padding:2px 8px; border-radius:999px; font-family:'Nunito'; font-weight:800;}
+  .cat-cases{display:flex; flex-wrap:wrap; gap:6px;}
+  .case-btn{
+    width:38px; height:38px; border-radius:9px; border:2.5px solid var(--teal-deep);
+    background:#fff; font-family:'IBM Plex Mono'; font-size:12.5px; font-weight:700; color:var(--teal-deep);
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition: transform .1s ease;
+  }
+  .case-btn:hover{transform:translateY(-2px);}
+  .case-btn.active{background:var(--gold); border-color:var(--gold-deep); color:#3a2400;}
+  .case-btn.done-full{background:var(--green-ok); border-color:#1f7a45; color:#fff;}
+  .case-btn.done-partial{background:#F4D06F; border-color:var(--gold-deep);}
+
+  /* ===== MAIN PANEL ===== */
+  #mainPanel{flex:1 1 auto; overflow-y:auto; min-height:0; padding:18px 22px 100px;}
+
+  /* ===== START SCREEN ===== */
+  #startScreen{
+    max-width:720px; margin:10px auto; background:#fff; border-radius:var(--radius);
+    box-shadow:var(--card-shadow); padding:26px 30px; border:3px solid var(--teal-deep);
+    text-align:center;
+  }
+  #startScreen h2{font-size:24px; color:var(--teal-deep);}
+  #startScreen p{font-size:18.5px; line-height:1.5; margin-top:10px;}
+  .rules{
+    text-align:left; background:var(--paper); border:2px dashed var(--gold-deep);
+    border-radius:10px; padding:14px 20px; margin:16px 0; font-size:17.5px; line-height:1.55;
+  }
+  .rules li{margin-bottom:5px;}
+  #startBtn{
+    margin-top:6px; font-family:'Baloo 2'; font-size:21px; font-weight:700;
+    background:var(--gold); color:var(--teal-deep); border:none; padding:13px 36px;
+    border-radius:999px; cursor:pointer; box-shadow:0 7px 0 var(--gold-deep);
+    transition:transform .08s ease;
+  }
+  #startBtn:active{transform:translateY(5px); box-shadow:0 2px 0 var(--gold-deep);}
+
+  /* ===== LOGIN / CHECK-IN BOX ===== */
+  .login-box{
+    text-align:left; background:#fff; border:2.5px solid var(--teal); border-radius:12px;
+    padding:16px 20px; margin:18px 0; box-shadow:0 4px 10px rgba(14,59,57,0.1);
+  }
+  .login-box h3{font-size:19px; color:var(--teal-deep);}
+  .login-note{font-size:14.5px; color:var(--grayText,#6b6350); margin:4px 0 12px;}
+  .login-fields{display:flex; gap:14px; flex-wrap:wrap;}
+  .login-fields .field{flex:1 1 150px; display:flex; flex-direction:column; gap:5px; font-size:15px; font-weight:700; color:var(--teal-deep);}
+  .login-fields input{
+    font-family:'Nunito'; font-size:17px; padding:9px 10px; border-radius:8px; border:2px solid var(--teal);
+  }
+  .teacher-link{margin-top:14px;}
+  #teacherBtn{
+    background:none; border:none; color:var(--teal); font-family:'Nunito'; font-weight:700;
+    font-size:14px; text-decoration:underline; cursor:pointer;
+  }
+
+  /* ===== TEACHER MODAL ===== */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(14,36,33,0.55); z-index:300;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-box{
+    background:#fff; border-radius:14px; max-width:820px; width:100%; max-height:85vh;
+    overflow-y:auto; padding:22px 26px; box-shadow:0 12px 30px rgba(0,0,0,0.35);
+  }
+  .modal-head{display:flex; justify-content:space-between; align-items:center;}
+  .modal-head h3{font-size:21px; color:var(--teal-deep);}
+  .modal-close{background:none; border:none; font-size:20px; cursor:pointer; color:var(--coral); font-weight:800;}
+  .modal-sub{font-size:14.5px; color:var(--grayText,#6b6350); margin:8px 0 14px;}
+  .modal-actions{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px;}
+  .table-wrap{max-height:340px; overflow-y:auto; border:1px solid var(--paper-line); border-radius:8px;}
+  #recordsTable{width:100%; border-collapse:collapse; font-size:14px;}
+  #recordsTable th{background:var(--teal-deep); color:#fff; padding:8px; position:sticky; top:0; text-align:left;}
+  #recordsTable td{padding:7px 8px; border-bottom:1px solid var(--paper-line);}
+  #recordsTable tr:nth-child(even){background:var(--paper);}
+
+  /* ===== EXIT OVERLAY ===== */
+  #exitOverlay{
+    position:fixed; inset:0; background:var(--teal-deep); z-index:400;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+  }
+  .exit-card{max-width:520px; padding:30px; color:#fff;}
+  .exit-card h2{font-size:26px; color:var(--gold); margin:14px 0;}
+  .exit-card p{font-size:18px; line-height:1.5;}
+
+  /* ===== CASE CARD ===== */
+  .case-card{
+    background:#fff; border-radius:var(--radius); box-shadow:var(--card-shadow);
+    border:3px solid var(--teal-deep); padding:20px 24px; max-width:1080px; margin:0 auto;
+  }
+  .case-title{
+    display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;
+    border-bottom:3px dotted var(--paper-line); padding-bottom:10px; margin-bottom:12px;
+  }
+  .case-title h2{font-size:21px; color:var(--teal-deep);}
+  .case-cat{font-size:14px; font-weight:800; color:var(--teal-light); text-transform:uppercase; letter-spacing:0.4px;}
+  .marks-tag{
+    background:var(--teal-deep); color:#fff; font-family:'Baloo 2'; font-weight:700;
+    font-size:16.5px; padding:6px 14px; border-radius:999px; white-space:nowrap; height:fit-content;
+  }
+  .scenario{
+    background:var(--paper); border-left:6px solid var(--gold); border-radius:8px;
+    padding:12px 18px; font-size:18.5px; line-height:1.5; margin-bottom:16px;
+  }
+  .scenario b{color:var(--teal-deep);}
+
+  .accounts-wrap{display:flex; gap:18px; flex-wrap:wrap;}
+  .taccount{
+    flex:1 1 340px; min-width:290px;
+    border:2.5px solid var(--ink); border-radius:6px; overflow:hidden; background:#FFFDF7;
+  }
+  .taccount-header{
+    text-align:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:17px;
+    background:var(--teal-deep); color:#fff; padding:7px 8px; letter-spacing:0.3px;
+  }
+  .drcr-labels{
+    display:flex; font-family:'IBM Plex Mono'; font-weight:700; font-size:15.5px;
+    background:#EFE7D2; border-bottom:2px solid var(--ink);
+  }
+  .drcr-labels span{flex:1; text-align:center; padding:5px 0; border-right:2px solid var(--ink);}
+  .drcr-labels span:last-child{border-right:none;}
+  .taccount-body{display:flex; min-height:118px;}
+  .side{
+    flex:1; border-right:2px solid var(--ink); padding:8px; display:flex; flex-direction:column; gap:6px;
+  }
+  .side:last-child{border-right:none;}
+  .side .colheads{
+    display:flex; font-family:'IBM Plex Mono'; font-size:12px; font-weight:600; color:#6b6350;
+    justify-content:space-between; border-bottom:1px solid #cfc6ab; padding-bottom:3px;
+  }
+  .entry-row{
+    display:flex; flex-direction:column; gap:3px; font-family:'IBM Plex Mono'; font-size:15px;
+    background:#fff; border:1px solid #cfc6ab; border-radius:6px; padding:6px; animation:pop .25s ease;
+  }
+  @keyframes pop{from{transform:scale(.85); opacity:0;} to{transform:scale(1); opacity:1;}}
+  .entry-row .r1{display:flex; justify-content:space-between; gap:6px;}
+  .post-slot{
+    border:2px dashed #b9ae8c; border-radius:8px; flex:1; display:flex; align-items:center;
+    justify-content:center; color:#9c927a; font-size:13.5px; font-weight:700; min-height:46px;
+    text-align:center; padding:5px;
+  }
+
+  .entry-controls{
+    margin-top:14px; background:var(--paper); border-radius:10px; padding:12px 16px;
+    display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; border:2px solid var(--paper-line);
+  }
+  .field{display:flex; flex-direction:column; gap:4px; font-size:15.5px; font-weight:700; color:var(--teal-deep);}
+  select, input[type=number]{
+    font-family:'Nunito'; font-size:17px; padding:8px 9px; border-radius:8px; border:2px solid var(--teal);
+    min-width:195px;
+  }
+  input[type=number]{min-width:120px;}
+  .mini-btn{
+    font-family:'Baloo 2'; font-weight:700; font-size:15.5px; padding:9px 16px; border-radius:999px;
+    border:none; cursor:pointer; color:#fff;
+  }
+  .mini-btn.dr{background:var(--teal-light); box-shadow:0 5px 0 #146357;}
+  .mini-btn.cr{background:var(--gold-deep); box-shadow:0 5px 0 #8f5c10;}
+  .mini-btn:active{transform:translateY(4px); box-shadow:none;}
+
+  .action-row{display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;}
+  .big-btn{
+    font-family:'Baloo 2'; font-weight:700; font-size:16.5px; padding:11px 22px; border-radius:999px;
+    border:none; cursor:pointer; color:#fff; background:var(--teal-deep); box-shadow:0 5px 0 #08201f;
+  }
+  .big-btn.secondary{background:#7A6E52; box-shadow:0 5px 0 #4d4531;}
+  .big-btn.reset{background:var(--coral); box-shadow:0 5px 0 #a5372a;}
+  .big-btn:active{transform:translateY(4px); box-shadow:none;}
+  .big-btn:disabled{opacity:.5; cursor:not-allowed; box-shadow:none;}
+
+  .feedback-box{
+    margin-top:14px; padding:12px 16px; border-radius:10px; font-size:17px; font-weight:700; display:none;
+  }
+  .feedback-box.show{display:block; animation:pop .3s ease;}
+  .feedback-box.full{background:#E3F6E9; border:2px solid var(--green-ok); color:#1f7a45;}
+  .feedback-box.partial{background:#FDF3D9; border:2px solid var(--gold-deep); color:#8f5c10;}
+  .feedback-box.zero{background:#FCE7E4; border:2px solid var(--coral); color:#a5372a;}
+
+  .solution-box{
+    margin-top:14px; display:none; background:#EAF3F1; border:2px solid var(--teal); border-radius:10px; padding:14px 18px;
+  }
+  .solution-box.show{display:block;}
+  .solution-box h3{color:var(--teal-deep); font-size:18.5px; margin-bottom:8px;}
+
+  .nav-buttons{display:flex; justify-content:space-between; margin-top:16px;}
+
+  /* ===== FLOATING SCOREBOARD ===== */
+  #scoreboard{
+    position:fixed; right:14px; bottom:14px; z-index:50;
+    background:linear-gradient(135deg, var(--teal-deep), var(--teal));
+    color:#fff; border-radius:14px; padding:10px 16px; box-shadow:0 8px 20px rgba(0,0,0,0.3);
+    border:2.5px solid var(--gold); min-width:190px; font-family:'Baloo 2';
+  }
+  #scoreboard .sb-row{display:flex; justify-content:space-between; align-items:center; font-size:15.5px; margin:3px 0;}
+  #scoreboard .sb-row span:last-child{font-weight:800; font-size:17.5px;}
+  #scoreboard #timerVal{color:var(--gold); font-size:20px;}
+  #scoreboard #timerVal.urgent{color:var(--coral); animation:blink 1s infinite;}
+  @keyframes blink{50%{opacity:.35;}}
+  #scoreboard .sb-total{border-top:2px dashed rgba(255,255,255,0.4); margin-top:6px; padding-top:6px;}
+  #endGameBtn{
+    width:100%; margin-top:10px; font-family:'Baloo 2'; font-weight:700; font-size:15px;
+    background:var(--coral); color:#fff; border:none; padding:8px 0; border-radius:999px;
+    cursor:pointer; box-shadow:0 4px 0 #a5372a;
+  }
+  #endGameBtn:active{transform:translateY(3px); box-shadow:none;}
+
+  /* ===== END SCREEN ===== */
+  #endScreen{
+    display:none; max-width:700px; margin:20px auto; background:#fff; border-radius:var(--radius);
+    box-shadow:var(--card-shadow); padding:30px 34px; border:3px solid var(--gold-deep); text-align:center;
+  }
+  #endScreen h2{font-size:26px; color:var(--teal-deep);}
+  #endScreen .grade-badge{
+    font-family:'Baloo 2'; font-weight:800; font-size:23px; color:#fff; background:var(--gold-deep);
+    display:inline-block; padding:12px 26px; border-radius:14px; margin:14px 0; box-shadow:0 6px 0 #8f5c10;
+  }
+  #endScreen p{font-size:18px; line-height:1.55;}
+
+  .confetti{
+    position:fixed; top:-20px; width:10px; height:16px; z-index:200; pointer-events:none; border-radius:2px;
+  }
+
+  @media (max-width:1000px){
+    #sidebar{width:190px; flex-basis:190px;}
+  }
+  @media (max-width:760px){
+    body{overflow:auto; height:auto;}
+    #appBody{flex-direction:column; overflow:visible;}
+    #sidebar{width:100%; flex-basis:auto; max-height:220px;}
+    #mainPanel{overflow:visible;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <button id="globalExitBtn" onclick="handleExitClick()">🚪 Exit</button>
+    <h1>🔍 Double-Entry Detective</h1>
+    <div class="sub">IGCSE Grade 7 · Unit 2.2 — post each case into the correct T-account.</div>
+  </div>
+  <div class="badge-row">
+    <div class="pill" id="playedPill">👥 Played: 0</div>
+    <div class="pill">⏱ 30-minute case file</div>
+    <div class="pill">🕵️ 26 cases · 130 marks</div>
+    <div class="pill">🔀 Any case, any order</div>
+  </div>
+</div>
+
+<div id="appBody">
+  <div id="sidebar"></div>
+  <div id="mainPanel">
+    <div id="startScreen">
+      <h2>Welcome, Detective!</h2>
+      <p>A pile of unsolved transactions has landed on your desk, sorted into case categories. Work out which account is <b>debited</b>, which is <b>credited</b>, and for how much — then post it into the ledger.</p>
+
+      <div class="login-box">
+        <h3>🪪 Student Check-In</h3>
+        <p class="login-note">Enter your details before you start — your score is recorded when you finish.</p>
+        <div class="login-fields">
+          <div class="field">
+            <label>ID Number</label>
+            <input type="text" id="studentId" placeholder="e.g. 20250042">
+          </div>
+          <div class="field">
+            <label>Grade</label>
+            <input type="text" id="studentGrade" placeholder="e.g. 7">
+          </div>
+          <div class="field">
+            <label>Section</label>
+            <input type="text" id="studentSection" placeholder="e.g. A">
+          </div>
+        </div>
+      </div>
+
+      <div class="rules">
+        <b>How this works:</b>
+        <ul>
+          <li>You have <b>30 minutes</b> on the clock once you start.</li>
+          <li>There are <b>26 cases</b> across 7 categories (Assets, Liabilities, Capital, Drawings, Income &amp; Expenses, Carriage In/Out, and 8 Inventory cases), worth <b>5 marks</b> each — <b>130 marks</b> total.</li>
+          <li>Use the category list on the left to jump to <b>any case, in any order</b>, and finish on any case.</li>
+          <li>For each case, pick <b>Post Dr</b> or <b>Post Cr</b> on the correct T-account, choose the right details, and type the amount.</li>
+          <li>Hit <b>Check My Ledger</b> to see your marks, or <b>Reveal Solution</b> to study the correct posting.</li>
+          <li>Your score updates live in the corner scoreboard.</li>
+        </ul>
+      </div>
+      <button id="startBtn" onclick="attemptStart()">Start the Case 🚀</button>
+      <div class="teacher-link">
+        <button id="teacherBtn" onclick="openTeacherPanel()">📋 Teacher: View / Download Student Records</button>
+      </div>
+    </div>
+
+    <div id="gameArea" style="display:none;"></div>
+
+    <div id="endScreen">
+      <h2>🏁 Case File Closed!</h2>
+      <div class="grade-badge" id="finalGrade"></div>
+      <p id="finalSummary"></p>
+      <button class="big-btn" onclick="showFullReview()">📖 Review All Solutions</button>
+      <button class="big-btn secondary" onclick="resetForNewStudent()">🔄 Play Again (New Student)</button>
+    </div>
+
+    <div id="exitOverlay" style="display:none;">
+      <div class="exit-card">
+        <div style="font-size:52px;">👋</div>
+        <h2>You have exited Double-Entry Detective</h2>
+        <p>Thank you for playing! Your results have been recorded. You may close this browser tab now.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="teacherModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>📋 Student Records</h3>
+      <button class="modal-close" onclick="closeTeacherPanel()">✕</button>
+    </div>
+    <p class="modal-sub">Total distinct students who played: <b id="modalCount">0</b> · Total attempts logged: <b id="modalAttempts">0</b></p>
+    <div class="modal-actions">
+      <label class="mini-btn dr" style="cursor:pointer;">📂 Load Previous Day's CSV
+        <input type="file" accept=".csv" id="loadRecordsFile" style="display:none;" onchange="handleLoadRecords(event)">
+      </label>
+      <button class="mini-btn cr" onclick="downloadRecords()">⬇️ Download Records (CSV)</button>
+    </div>
+    <div class="table-wrap">
+      <table id="recordsTable">
+        <thead><tr><th>ID Number</th><th>Grade</th><th>Section</th><th>Score</th><th>Total</th><th>%</th><th>Date / Time</th></tr></thead>
+        <tbody id="recordsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<div id="scoreboard" style="display:none;">
+  <div class="sb-row"><span>⏱ Time left</span><span id="timerVal">30:00</span></div>
+  <div class="sb-row"><span>📋 This case</span><span id="qScore">0/5</span></div>
+  <div class="sb-row sb-total"><span>🏆 Total score</span><span id="totalScore">0/130</span></div>
+  <button id="endGameBtn" onclick="confirmEndGame()">🏁 End Game</button>
+</div>
+
+<script>
+/* ============ CATEGORY META ============ */
+const categories = [
+  {id:"AS", name:"Assets", icon:"🏠"},
+  {id:"LI", name:"Liabilities", icon:"🏦"},
+  {id:"CA", name:"Capital", icon:"💰"},
+  {id:"DR", name:"Drawings", icon:"👛"},
+  {id:"IE", name:"Income & Expenses", icon:"📈"},
+  {id:"CI", name:"Carriage In & Out", icon:"🚚"},
+  {id:"INV", name:"Inventory", icon:"📦"}
+];
+
+/* ============ QUESTION DATA ============ */
+const questions = [
+  // ---------------- ASSETS (3) ----------------
+  { cat:"AS", num:1, marks:5, date:"2 Apr 20..5",
+    scenario:"The business bought a <b>delivery motorbike for MVR 9,000</b>, paying immediately by cheque.",
+    accA:{title:"Motorbike Account", side:"Dr", details:"Bank"},
+    accB:{title:"Bank Account", side:"Cr", details:"Motorbike"},
+    amount:9000,
+    optionsA:["Bank","Capital","Cash","Purchases"],
+    optionsB:["Motorbike","Equipment","Sales","Drawings"]
+  },
+  { cat:"AS", num:2, marks:5, date:"5 Apr 20..5",
+    scenario:"Sold an old printer (no longer needed) for <b>MVR 1,200 cash</b>.",
+    accA:{title:"Cash Account", side:"Dr", details:"Printer"},
+    accB:{title:"Printer Account", side:"Cr", details:"Cash"},
+    amount:1200,
+    optionsA:["Printer","Bank","Capital","Sales"],
+    optionsB:["Cash","Bank","Drawings","Purchases"]
+  },
+  { cat:"AS", num:3, marks:5, date:"9 Apr 20..5",
+    scenario:"The business deposited <b>MVR 4,000 cash</b> into its bank account.",
+    accA:{title:"Bank Account", side:"Dr", details:"Cash"},
+    accB:{title:"Cash Account", side:"Cr", details:"Bank"},
+    amount:4000,
+    optionsA:["Cash","Capital","Sales","Loan"],
+    optionsB:["Bank","Drawings","Purchases","Equipment"]
+  },
+
+  // ---------------- LIABILITIES (3) ----------------
+  { cat:"LI", num:1, marks:5, date:"3 May 20..5",
+    scenario:"Waheed, a friend of the owner, gave the business a <b>loan of MVR 15,000</b> by cheque.",
+    accA:{title:"Bank Account", side:"Dr", details:"Waheed Loan"},
+    accB:{title:"Waheed Loan Account", side:"Cr", details:"Bank"},
+    amount:15000,
+    optionsA:["Waheed Loan","Capital","Sales","Purchases Returns"],
+    optionsB:["Bank","Cash","Equipment","Drawings"]
+  },
+  { cat:"LI", num:2, marks:5, date:"10 May 20..5",
+    scenario:"The business repaid <b>MVR 5,000</b> of the Waheed loan by cheque.",
+    accA:{title:"Waheed Loan Account", side:"Dr", details:"Bank"},
+    accB:{title:"Bank Account", side:"Cr", details:"Waheed Loan"},
+    amount:5000,
+    optionsA:["Bank","Cash","Capital","Sales"],
+    optionsB:["Waheed Loan","Star Furnishers","Drawings","Purchases"]
+  },
+  { cat:"LI", num:3, marks:5, date:"14 May 20..5",
+    scenario:"Bought office furniture worth <b>MVR 4,500 on credit</b> from Star Furnishers.",
+    accA:{title:"Furniture Account", side:"Dr", details:"Star Furnishers"},
+    accB:{title:"Star Furnishers Account", side:"Cr", details:"Furniture"},
+    amount:4500,
+    optionsA:["Star Furnishers","Bank","Cash","Waheed Loan"],
+    optionsB:["Furniture","Equipment","Drawings","Sales"]
+  },
+
+  // ---------------- CAPITAL (3) ----------------
+  { cat:"CA", num:1, marks:5, date:"1 Jun 20..5",
+    scenario:"The owner introduced additional capital of <b>MVR 20,000 in cash</b>.",
+    accA:{title:"Cash Account", side:"Dr", details:"Capital"},
+    accB:{title:"Capital Account", side:"Cr", details:"Cash"},
+    amount:20000,
+    optionsA:["Capital","Drawings","Sales","Loan"],
+    optionsB:["Cash","Bank","Purchases","Furniture"]
+  },
+  { cat:"CA", num:2, marks:5, date:"6 Jun 20..5",
+    scenario:"The owner paid a personal cheque of <b>MVR 10,000</b> into the business bank account as capital.",
+    accA:{title:"Bank Account", side:"Dr", details:"Capital"},
+    accB:{title:"Capital Account", side:"Cr", details:"Bank"},
+    amount:10000,
+    optionsA:["Capital","Drawings","Waheed Loan","Sales"],
+    optionsB:["Bank","Cash","Motorbike","Purchases"]
+  },
+  { cat:"CA", num:3, marks:5, date:"12 Jun 20..5",
+    scenario:"The owner contributed his own <b>delivery van worth MVR 35,000</b> as capital.",
+    accA:{title:"Delivery Van Account", side:"Dr", details:"Capital"},
+    accB:{title:"Capital Account", side:"Cr", details:"Delivery Van"},
+    amount:35000,
+    optionsA:["Capital","Drawings","Bank","Loan"],
+    optionsB:["Delivery Van","Motorbike","Furniture","Cash"]
+  },
+
+  // ---------------- DRAWINGS (3) ----------------
+  { cat:"DR", num:1, marks:5, date:"2 Jul 20..5",
+    scenario:"The owner withdrew <b>MVR 1,200 cash</b> from the business for personal use.",
+    accA:{title:"Drawings Account", side:"Dr", details:"Cash"},
+    accB:{title:"Cash Account", side:"Cr", details:"Drawings"},
+    amount:1200,
+    optionsA:["Cash","Bank","Sales","Capital"],
+    optionsB:["Drawings","Purchases","Salaries","Loan"]
+  },
+  { cat:"DR", num:2, marks:5, date:"8 Jul 20..5",
+    scenario:"The owner took <b>goods worth MVR 650</b> from the business inventory for personal use.",
+    accA:{title:"Drawings Account", side:"Dr", details:"Purchases"},
+    accB:{title:"Purchases Account", side:"Cr", details:"Drawings"},
+    amount:650,
+    optionsA:["Purchases","Sales","Cash","Bank"],
+    optionsB:["Drawings","Capital","Sales Returns","Furniture"]
+  },
+  { cat:"DR", num:3, marks:5, date:"15 Jul 20..5",
+    scenario:"The owner transferred <b>MVR 2,500</b> from the business bank account to his personal account.",
+    accA:{title:"Drawings Account", side:"Dr", details:"Bank"},
+    accB:{title:"Bank Account", side:"Cr", details:"Drawings"},
+    amount:2500,
+    optionsA:["Bank","Cash","Capital","Sales"],
+    optionsB:["Drawings","Salaries","Purchases","Star Furnishers"]
+  },
+
+  // ---------------- INCOME & EXPENSES (3) ----------------
+  { cat:"IE", num:1, marks:5, date:"1 Aug 20..5",
+    scenario:"Paid staff <b>salaries of MVR 7,200</b> by cheque.",
+    accA:{title:"Salaries Account", side:"Dr", details:"Bank"},
+    accB:{title:"Bank Account", side:"Cr", details:"Salaries"},
+    amount:7200,
+    optionsA:["Bank","Cash","Capital","Rent Received"],
+    optionsB:["Salaries","Advertising Expenses","Commission Received","Drawings"]
+  },
+  { cat:"IE", num:2, marks:5, date:"9 Aug 20..5",
+    scenario:"Received <b>rent income of MVR 3,000</b> by cheque.",
+    accA:{title:"Bank Account", side:"Dr", details:"Rent Received"},
+    accB:{title:"Rent Received Account", side:"Cr", details:"Bank"},
+    amount:3000,
+    optionsA:["Rent Received","Sales","Loan","Capital"],
+    optionsB:["Bank","Cash","Furniture","Salaries"]
+  },
+  { cat:"IE", num:3, marks:5, date:"18 Aug 20..5",
+    scenario:"Paid <b>advertising expenses of MVR 950</b> in cash.",
+    accA:{title:"Advertising Expenses Account", side:"Dr", details:"Cash"},
+    accB:{title:"Cash Account", side:"Cr", details:"Advertising Expenses"},
+    amount:950,
+    optionsA:["Cash","Bank","Capital","Sales"],
+    optionsB:["Advertising Expenses","Salaries","Commission Received","Drawings"]
+  },
+
+  // ---------------- CARRIAGE IN & OUT (3) ----------------
+  { cat:"CI", num:1, marks:5, date:"4 Sep 20..5",
+    scenario:"Paid <b>MVR 300 cash</b> as carriage inwards to transport goods bought from a supplier.",
+    accA:{title:"Carriage Inwards Account", side:"Dr", details:"Cash"},
+    accB:{title:"Cash Account", side:"Cr", details:"Carriage Inwards"},
+    amount:300,
+    optionsA:["Cash","Bank","Purchases","Sales"],
+    optionsB:["Carriage Inwards","Carriage Outwards","Drawings","Salaries"]
+  },
+  { cat:"CI", num:2, marks:5, date:"11 Sep 20..5",
+    scenario:"Paid <b>MVR 450 by cheque</b> as carriage outwards to deliver goods to a customer.",
+    accA:{title:"Carriage Outwards Account", side:"Dr", details:"Bank"},
+    accB:{title:"Bank Account", side:"Cr", details:"Carriage Outwards"},
+    amount:450,
+    optionsA:["Bank","Cash","Capital","Sales"],
+    optionsB:["Carriage Outwards","Carriage Inwards","Purchases","Drawings"]
+  },
+  { cat:"CI", num:3, marks:5, date:"20 Sep 20..5",
+    scenario:"Paid <b>MVR 220 by cheque</b> as carriage inwards on stock imported from Colombo.",
+    accA:{title:"Carriage Inwards Account", side:"Dr", details:"Bank"},
+    accB:{title:"Bank Account", side:"Cr", details:"Carriage Inwards"},
+    amount:220,
+    optionsA:["Bank","Cash","Sales","Capital"],
+    optionsB:["Carriage Inwards","Carriage Outwards","Salaries","Purchases"]
+  },
+
+  // ---------------- INVENTORY (8) ----------------
+  { cat:"INV", num:1, marks:5, date:"2 Oct 20..5",
+    scenario:"Bought goods on credit from <b>Hussain</b> worth <b>MVR 7,200</b> (for resale).",
+    accA:{title:"Purchases Account", side:"Dr", details:"Hussain"},
+    accB:{title:"Hussain Account", side:"Cr", details:"Purchases"},
+    amount:7200,
+    optionsA:["Hussain","Cash","Bank","Sales Returns"],
+    optionsB:["Purchases","Sales","Drawings","Capital"]
+  },
+  { cat:"INV", num:2, marks:5, date:"5 Oct 20..5",
+    scenario:"Bought goods for <b>cash, MVR 2,800</b> (for resale).",
+    accA:{title:"Purchases Account", side:"Dr", details:"Cash"},
+    accB:{title:"Cash Account", side:"Cr", details:"Purchases"},
+    amount:2800,
+    optionsA:["Cash","Bank","Hussain","Sales"],
+    optionsB:["Purchases","Sales Returns","Drawings","Salaries"]
+  },
+  { cat:"INV", num:3, marks:5, date:"9 Oct 20..5",
+    scenario:"Sold goods on credit to <b>Shifa</b> for <b>MVR 6,100</b>.",
+    accA:{title:"Shifa Account", side:"Dr", details:"Sales"},
+    accB:{title:"Sales Account", side:"Cr", details:"Shifa"},
+    amount:6100,
+    optionsA:["Sales","Purchases","Bank","Capital"],
+    optionsB:["Shifa","Hussain","Cash","Loan"]
+  },
+  { cat:"INV", num:4, marks:5, date:"12 Oct 20..5",
+    scenario:"Sold goods for <b>cash, MVR 3,400</b>.",
+    accA:{title:"Cash Account", side:"Dr", details:"Sales"},
+    accB:{title:"Sales Account", side:"Cr", details:"Cash"},
+    amount:3400,
+    optionsA:["Sales","Purchases","Bank","Drawings"],
+    optionsB:["Cash","Shifa","Bank","Capital"]
+  },
+  { cat:"INV", num:5, marks:5, date:"15 Oct 20..5",
+    scenario:"Returned goods worth <b>MVR 320</b> to supplier <b>Hussain</b> (damaged stock).",
+    accA:{title:"Hussain Account", side:"Dr", details:"Purchases Returns"},
+    accB:{title:"Purchases Returns Account", side:"Cr", details:"Hussain"},
+    amount:320,
+    optionsA:["Purchases Returns","Sales Returns","Bank","Cash"],
+    optionsB:["Hussain","Shifa","Capital","Adam"]
+  },
+  { cat:"INV", num:6, marks:5, date:"18 Oct 20..5",
+    scenario:"Returned goods worth <b>MVR 200</b> to supplier <b>Adam</b> (wrong items delivered).",
+    accA:{title:"Adam Account", side:"Dr", details:"Purchases Returns"},
+    accB:{title:"Purchases Returns Account", side:"Cr", details:"Adam"},
+    amount:200,
+    optionsA:["Purchases Returns","Sales Returns","Cash","Bank"],
+    optionsB:["Adam","Hussain","Ibrahim","Capital"]
+  },
+  { cat:"INV", num:7, marks:5, date:"21 Oct 20..5",
+    scenario:"<b>Shifa</b> returned faulty goods worth <b>MVR 400</b> that she had bought on credit.",
+    accA:{title:"Sales Returns Account", side:"Dr", details:"Shifa"},
+    accB:{title:"Shifa Account", side:"Cr", details:"Sales Returns"},
+    amount:400,
+    optionsA:["Shifa","Hussain","Bank","Cash"],
+    optionsB:["Sales Returns","Purchases Returns","Sales","Purchases"]
+  },
+  { cat:"INV", num:8, marks:5, date:"25 Oct 20..5",
+    scenario:"Customer <b>Ibrahim</b> returned goods worth <b>MVR 260</b> bought on credit.",
+    accA:{title:"Sales Returns Account", side:"Dr", details:"Ibrahim"},
+    accB:{title:"Ibrahim Account", side:"Cr", details:"Sales Returns"},
+    amount:260,
+    optionsA:["Ibrahim","Adam","Bank","Cash"],
+    optionsB:["Sales Returns","Purchases Returns","Sales","Purchases"]
+  }
+];
+
+const TOTAL_MARKS = questions.reduce((s,q)=>s+q.marks,0); // 130
+
+/* ============ STUDENT / RECORDS STATE ============ */
+let appState = 'start'; // 'start' | 'playing' | 'ended'
+let studentInfo = null; // {id, grade, section}
+let studentRecords = []; // in-memory log for this session (+ any loaded CSV)
+
+function attemptStart(){
+  const id = document.getElementById('studentId').value.trim();
+  const grade = document.getElementById('studentGrade').value.trim();
+  const section = document.getElementById('studentSection').value.trim();
+  if(!id || !grade || !section){
+    alert('Please enter your ID Number, Grade and Section before starting.');
+    return;
+  }
+  studentInfo = { id, grade, section };
+  startGame();
+}
+
+function updatePlayedCount(){
+  const uniqueIds = new Set(studentRecords.map(r=>r.id));
+  document.getElementById('playedPill').textContent = "👥 Played: " + uniqueIds.size;
+  const mc = document.getElementById('modalCount'); if(mc) mc.textContent = uniqueIds.size;
+  const ma = document.getElementById('modalAttempts'); if(ma) ma.textContent = studentRecords.length;
+}
+
+function recordAttempt(score, total, pct){
+  if(!studentInfo) return;
+  studentRecords.push({
+    id: studentInfo.id, grade: studentInfo.grade, section: studentInfo.section,
+    score, total, pct, timestamp: new Date().toLocaleString()
+  });
+  updatePlayedCount();
+  renderRecordsTable();
+}
+
+function renderRecordsTable(){
+  const body = document.getElementById('recordsTableBody');
+  if(!body) return;
+  body.innerHTML = studentRecords.map(r=>`
+    <tr><td>${r.id}</td><td>${r.grade}</td><td>${r.section}</td><td>${r.score}</td><td>${r.total}</td><td>${r.pct}%</td><td>${r.timestamp}</td></tr>
+  `).join('');
+}
+
+function csvEscape(val){
+  val = String(val);
+  if(/[",\r\n]/.test(val)){ val = '"'+val.replace(/"/g,'""')+'"'; }
+  return val;
+}
+function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
+
+function downloadRecords(){
+  const header = ['ID Number','Grade','Section','Score','Total Marks','Percentage','Date/Time'];
+  const rows = studentRecords.map(r=>[r.id, r.grade, r.section, r.score, r.total, r.pct+'%', r.timestamp]);
+  const csv = [header, ...rows].map(row=>row.map(csvEscape).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'DoubleEntryDetective_Records_'+todayStr()+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function parseCSVLine(line){
+  const result=[]; let cur=''; let inQuotes=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(inQuotes){
+      if(ch==='"'){ if(line[i+1]==='"'){ cur+='"'; i++; } else { inQuotes=false; } }
+      else cur+=ch;
+    } else {
+      if(ch==='"') inQuotes=true;
+      else if(ch===','){ result.push(cur); cur=''; }
+      else cur+=ch;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+function handleLoadRecords(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const lines = String(e.target.result).split(/\r?\n/).filter(l=>l.trim().length);
+    let loaded = 0;
+    lines.slice(1).forEach(line=>{
+      const cols = parseCSVLine(line);
+      if(cols.length>=7){
+        studentRecords.push({
+          id:cols[0], grade:cols[1], section:cols[2],
+          score:Number(cols[3]), total:Number(cols[4]),
+          pct:Number(String(cols[5]).replace('%','')), timestamp:cols[6]
+        });
+        loaded++;
+      }
+    });
+    updatePlayedCount();
+    renderRecordsTable();
+    alert('Loaded '+loaded+' previous record(s). The Played counter and table are now updated.');
+    evt.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function openTeacherPanel(){
+  renderRecordsTable();
+  updatePlayedCount();
+  document.getElementById('teacherModal').style.display='flex';
+}
+function closeTeacherPanel(){
+  document.getElementById('teacherModal').style.display='none';
+}
+
+/* ============ EXIT HANDLING ============ */
+function handleExitClick(){
+  if(appState==='start'){
+    if(confirm('Exit the game now?')) terminateApp();
+  } else if(appState==='playing'){
+    if(confirm("End your current game and go to your results? Your score so far will be recorded.")){
+      endGame();
+    }
+  } else { // ended
+    if(confirm('Exit the game completely?')) terminateApp();
+  }
+}
+
+function terminateApp(){
+  if(timerInterval) clearInterval(timerInterval);
+  document.getElementById('sidebar').style.display='none';
+  document.getElementById('gameArea').style.display='none';
+  document.getElementById('scoreboard').style.display='none';
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('endScreen').style.display='none';
+  document.getElementById('globalExitBtn').style.display='none';
+  closeTeacherPanel();
+  document.getElementById('exitOverlay').style.display='flex';
+  setTimeout(()=>{ try{ window.close(); }catch(e){} }, 400);
+}
+
+/* ============ STATE ============ */
+let current = 0;
+let totalScore = 0;
+const state = questions.map(()=>({
+  posted:{A:null, B:null},
+  checked:false, score:0, revealed:false
+}));
+let timeLeft = 30*60;
+let timerInterval = null;
+let gameEnded = false;
+
+/* ============ INIT ============ */
+document.getElementById('totalScore').textContent = "0/"+TOTAL_MARKS;
+updatePlayedCount();
+
+function startGame(){
+  appState = 'playing';
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('sidebar').style.display='block';
+  document.getElementById('gameArea').style.display='block';
+  document.getElementById('scoreboard').style.display='block';
+  buildSidebar();
+  renderQuestion(0);
+  startTimer();
+}
+
+function startTimer(){
+  updateTimerDisplay();
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft<=0){
+      clearInterval(timerInterval);
+      endGame();
+    }
+  },1000);
+}
+
+function updateTimerDisplay(){
+  const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
+  const s = (timeLeft%60).toString().padStart(2,'0');
+  const el = document.getElementById('timerVal');
+  el.textContent = m+":"+s;
+  if(timeLeft<=60) el.classList.add('urgent'); else el.classList.remove('urgent');
+}
+
+/* ============ SIDEBAR ============ */
+function buildSidebar(){
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML='';
+  categories.forEach(cat=>{
+    const idxs = questions.map((q,i)=>({q,i})).filter(o=>o.q.cat===cat.id);
+    const group = document.createElement('div');
+    group.className='cat-group';
+    group.innerHTML = `<div class="cat-head"><span>${cat.icon} ${cat.name}</span><span class="cat-frac" id="frac-${cat.id}">0/${idxs.length}</span></div>
+      <div class="cat-cases" id="cases-${cat.id}"></div>`;
+    sidebar.appendChild(group);
+    const holder = group.querySelector('.cat-cases');
+    idxs.forEach(o=>{
+      const btn = document.createElement('button');
+      btn.className='case-btn';
+      btn.id='navbtn'+o.i;
+      btn.textContent = cat.id+o.q.num;
+      btn.onclick = ()=>renderQuestion(o.i);
+      holder.appendChild(btn);
+    });
+  });
+  refreshNavStyles();
+}
+
+function refreshNavStyles(){
+  questions.forEach((q,i)=>{
+    const btn = document.getElementById('navbtn'+i);
+    btn.classList.remove('active','done-full','done-partial');
+    if(i===current) btn.classList.add('active');
+    else if(state[i].checked){
+      if(state[i].score===q.marks) btn.classList.add('done-full');
+      else btn.classList.add('done-partial');
+    }
+  });
+  categories.forEach(cat=>{
+    const idxs = questions.map((q,i)=>i).filter(i=>questions[i].cat===cat.id);
+    const done = idxs.filter(i=>state[i].checked && state[i].score===questions[i].marks).length;
+    document.getElementById('frac-'+cat.id).textContent = done+"/"+idxs.length;
+  });
+}
+
+/* ============ RENDER QUESTION ============ */
+function renderQuestion(i){
+  current = i;
+  const q = questions[i];
+  const s = state[i];
+  const catInfo = categories.find(c=>c.id===q.cat);
+  refreshNavStyles();
+
+  const area = document.getElementById('gameArea');
+  area.innerHTML = `
+    <div class="case-card">
+      <div class="case-title">
+        <div>
+          <div class="case-cat">${catInfo.icon} ${catInfo.name} · Case ${q.cat}${q.num}</div>
+          <h2>📁 ${q.date}</h2>
+        </div>
+        <div class="marks-tag">${q.marks} marks</div>
+      </div>
+      <div class="scenario">${q.scenario}</div>
+
+      <div class="accounts-wrap">
+        ${renderTAccount('A', q, s)}
+        ${renderTAccount('B', q, s)}
+      </div>
+
+      <div class="entry-controls">
+        <div class="field">
+          <label>Which account is this for?</label>
+          <select id="targetSelect">
+            <option value="" selected disabled>-- Select account --</option>
+            <option value="A">${q.accA.title}</option>
+            <option value="B">${q.accB.title}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Details (opposite account)</label>
+          <select id="detailsSelect"></select>
+        </div>
+        <div class="field">
+          <label>Amount (MVR)</label>
+          <input type="number" id="amountInput" min="0" placeholder="e.g. 5000">
+        </div>
+        <button class="mini-btn dr" onclick="postEntry('Dr')">📗 Post Dr</button>
+        <button class="mini-btn cr" onclick="postEntry('Cr')">📕 Post Cr</button>
+      </div>
+
+      <div class="action-row">
+        <button class="big-btn" onclick="checkAnswer()">✅ Check My Ledger</button>
+        <button class="big-btn secondary" onclick="revealSolution()">💡 Reveal Solution</button>
+        <button class="big-btn reset" onclick="resetQuestion()">↺ Clear Case</button>
+      </div>
+
+      <div class="feedback-box" id="feedbackBox"></div>
+      <div class="solution-box" id="solutionBox"></div>
+
+      <div class="nav-buttons">
+        <button class="big-btn secondary" ${i===0?'disabled':''} onclick="renderQuestion(${i-1})">⬅ Previous</button>
+        <button class="big-btn secondary" ${i===questions.length-1?'disabled':''} onclick="renderQuestion(${i+1})">Next ➡</button>
+      </div>
+    </div>
+  `;
+  populateDetailsSelect();
+  document.getElementById('targetSelect').addEventListener('change', populateDetailsSelect);
+
+  if(s.checked) showFeedback(i);
+  if(s.revealed) showSolutionBox(i);
+  updateScoreboardForCurrent();
+}
+
+function renderTAccount(key, q, s){
+  const acc = key==='A' ? q.accA : q.accB;
+  const posted = s.posted[key];
+  const drRow = (posted && posted.side==='Dr') ? entryRowHTML(q.date, posted.details, posted.amount) : emptySlotHTML();
+  const crRow = (posted && posted.side==='Cr') ? entryRowHTML(q.date, posted.details, posted.amount) : emptySlotHTML();
+  return `
+    <div class="taccount">
+      <div class="taccount-header">${acc.title}</div>
+      <div class="drcr-labels"><span>Dr</span><span>Cr</span></div>
+      <div class="taccount-body">
+        <div class="side">
+          <div class="colheads"><span>Date</span><span>Details</span><span>MVR</span></div>
+          ${drRow}
+        </div>
+        <div class="side">
+          <div class="colheads"><span>Date</span><span>Details</span><span>MVR</span></div>
+          ${crRow}
+        </div>
+      </div>
+    </div>
+  `;
+}
+function entryRowHTML(date,details,amount){
+  return `<div class="entry-row"><div class="r1"><span>${date}</span></div><div class="r1"><span>${details}</span><span>${Number(amount).toLocaleString()}</span></div></div>`;
+}
+function emptySlotHTML(){
+  return `<div class="post-slot">Not posted yet</div>`;
+}
+
+function populateDetailsSelect(){
+  const q = questions[current];
+  const target = document.getElementById('targetSelect').value;
+  const sel = document.getElementById('detailsSelect');
+  if(!target){
+    sel.innerHTML = `<option value="" selected disabled>-- Select account first --</option>`;
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  const opts = target==='A' ? q.optionsA : q.optionsB;
+  sel.innerHTML = `<option value="" selected disabled>-- Select details --</option>` +
+    opts.map(o=>`<option value="${o}">${o}</option>`).join('');
+}
+
+/* ============ POSTING ============ */
+function postEntry(side){
+  if(gameEnded) return;
+  const i = current;
+  const target = document.getElementById('targetSelect').value;
+  const details = document.getElementById('detailsSelect').value;
+  const amount = document.getElementById('amountInput').value;
+  if(!target){
+    flashMessage("Select which account this entry is for first!");
+    return;
+  }
+  if(!details){
+    flashMessage("Select the details (opposite account) first!");
+    return;
+  }
+  if(!amount || Number(amount)<=0){
+    flashMessage("Type an amount before posting!");
+    return;
+  }
+  state[i].posted[target] = {side, details, amount};
+  renderQuestion(i);
+}
+
+function flashMessage(msg){
+  const box = document.getElementById('feedbackBox');
+  box.className='feedback-box show partial';
+  box.textContent = "⚠️ "+msg;
+}
+
+function resetQuestion(){
+  const i=current;
+  state[i].posted={A:null,B:null};
+  state[i].checked=false;
+  state[i].revealed=false;
+  renderQuestion(i);
+}
+
+/* ============ CHECKING ============ */
+function checkAnswer(){
+  const i = current;
+  const q = questions[i];
+  const s = state[i];
+  const pA = s.posted.A, pB = s.posted.B;
+
+  let earned = 0;
+  const sideA = !!(pA && pA.side===q.accA.side);
+  const sideB = !!(pB && pB.side===q.accB.side);
+  const detailsA = !!(pA && pA.details===q.accA.details);
+  const detailsB = !!(pB && pB.details===q.accB.details);
+  const amountOK = !!(pA && pB && Number(pA.amount)===q.amount && Number(pB.amount)===q.amount);
+
+  earned += sideA?1:0;
+  earned += sideB?1:0;
+  earned += detailsA?1:0;
+  earned += detailsB?1:0;
+  earned += amountOK?1:0;
+
+  if(!s.checked){
+    totalScore += earned;
+  } else {
+    totalScore += (earned - s.score);
+  }
+  s.score = earned;
+  s.checked = true;
+  refreshNavStyles();
+  updateScoreboardForCurrent();
+  showFeedback(i);
+
+  if(earned===q.marks) launchConfetti();
+}
+
+function showFeedback(i){
+  const q = questions[i];
+  const s = state[i];
+  const box = document.getElementById('feedbackBox');
+  box.className='feedback-box show ' + (s.score===q.marks?'full':(s.score===0?'zero':'partial'));
+  let msg;
+  if(s.score===q.marks) msg = "🎉 Case cracked! Perfect posting — "+s.score+"/"+q.marks+" marks.";
+  else if(s.score===0) msg = "🕵️ Not quite — 0/"+q.marks+" marks. Try again or reveal the solution.";
+  else msg = "🔎 Good detective work — "+s.score+"/"+q.marks+" marks. Check the sides, details and amount again.";
+  box.textContent = msg;
+}
+
+/* ============ SOLUTION ============ */
+function revealSolution(){
+  const i = current;
+  state[i].revealed = true;
+  showSolutionBox(i);
+}
+function showSolutionBox(i){
+  const q = questions[i];
+  const box = document.getElementById('solutionBox');
+  box.className='solution-box show';
+  box.innerHTML = `
+    <h3>✅ Correct Ledger Posting</h3>
+    <div class="accounts-wrap">
+      <div class="taccount">
+        <div class="taccount-header">${q.accA.title}</div>
+        <div class="drcr-labels"><span>Dr</span><span>Cr</span></div>
+        <div class="taccount-body">
+          <div class="side"><div class="colheads"><span>Date</span><span>Details</span><span>MVR</span></div>
+            ${q.accA.side==='Dr'?entryRowHTML(q.date,q.accA.details,q.amount):'<div class="post-slot">—</div>'}</div>
+          <div class="side"><div class="colheads"><span>Date</span><span>Details</span><span>MVR</span></div>
+            ${q.accA.side==='Cr'?entryRowHTML(q.date,q.accA.details,q.amount):'<div class="post-slot">—</div>'}</div>
+        </div>
+      </div>
+      <div class="taccount">
+        <div class="taccount-header">${q.accB.title}</div>
+        <div class="drcr-labels"><span>Dr</span><span>Cr</span></div>
+        <div class="taccount-body">
+          <div class="side"><div class="colheads"><span>Date</span><span>Details</span><span>MVR</span></div>
+            ${q.accB.side==='Dr'?entryRowHTML(q.date,q.accB.details,q.amount):'<div class="post-slot">—</div>'}</div>
+          <div class="side"><div class="colheads"><span>Date</span><span>Details</span><span>MVR</span></div>
+            ${q.accB.side==='Cr'?entryRowHTML(q.date,q.accB.details,q.amount):'<div class="post-slot">—</div>'}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showFullReview(){
+  document.getElementById('endScreen').style.display='none';
+  document.getElementById('sidebar').style.display='block';
+  document.getElementById('gameArea').style.display='block';
+  document.getElementById('scoreboard').style.display='block';
+  questions.forEach((q,i)=>{ state[i].revealed=true; });
+  renderQuestion(0);
+}
+
+function resetForNewStudent(){
+  // reset per-attempt state only — studentRecords (the log) is kept for the whole day/session
+  current = 0;
+  totalScore = 0;
+  state.forEach(s=>{ s.posted={A:null,B:null}; s.checked=false; s.score=0; s.revealed=false; });
+  timeLeft = 30*60;
+  gameEnded = false;
+  studentInfo = null;
+  appState = 'start';
+  document.getElementById('studentId').value='';
+  document.getElementById('studentGrade').value='';
+  document.getElementById('studentSection').value='';
+  document.getElementById('timerVal').textContent = '30:00';
+  document.getElementById('timerVal').classList.remove('urgent');
+  document.getElementById('totalScore').textContent = '0/'+TOTAL_MARKS;
+  document.getElementById('endScreen').style.display='none';
+  document.getElementById('sidebar').style.display='none';
+  document.getElementById('gameArea').style.display='none';
+  document.getElementById('scoreboard').style.display='none';
+  document.getElementById('startScreen').style.display='block';
+}
+
+/* ============ SCOREBOARD ============ */
+function updateScoreboardForCurrent(){
+  const q = questions[current];
+  const s = state[current];
+  document.getElementById('qScore').textContent = (s.checked? s.score : 0)+"/"+q.marks;
+  document.getElementById('totalScore').textContent = totalScore+"/"+TOTAL_MARKS;
+}
+
+/* ============ END GAME ============ */
+function confirmEndGame(){
+  const answered = state.filter(s=>s.checked).length;
+  const remaining = questions.length - answered;
+  const msg = remaining>0
+    ? `You still have ${remaining} case${remaining===1?'':'s'} left. End the game now and submit your score of ${totalScore}/${TOTAL_MARKS}?`
+    : `End the game and submit your final score of ${totalScore}/${TOTAL_MARKS}?`;
+  if(confirm(msg)){
+    endGame();
+  }
+}
+
+function endGame(){
+  if(gameEnded) return;
+  gameEnded = true;
+  appState = 'ended';
+  if(timerInterval) clearInterval(timerInterval);
+  document.getElementById('sidebar').style.display='none';
+  document.getElementById('gameArea').style.display='none';
+  document.getElementById('scoreboard').style.display='none';
+  const pct = Math.round((totalScore/TOTAL_MARKS)*100);
+  recordAttempt(totalScore, TOTAL_MARKS, pct);
+  let grade, comment;
+  if(pct>=90){grade="🏆 Master Ledger Detective!"; comment="Outstanding! You've mastered debits and credits like a true accountant.";}
+  else if(pct>=70){grade="🥈 Sharp-Eyed Investigator"; comment="Great job! A little more practice on the tricky cases and you'll be flawless.";}
+  else if(pct>=50){grade="🥉 Trainee Detective"; comment="Solid start! Review the solutions below to sharpen your double-entry instincts.";}
+  else {grade="🔎 Rookie on the Case"; comment="Keep investigating — revisit the T-account rules and try again!";}
+  document.getElementById('finalGrade').textContent = grade;
+  document.getElementById('finalSummary').innerHTML = `You solved the case file with a final score of <b>${totalScore} / ${TOTAL_MARKS}</b> (${pct}%).<br>ID ${studentInfo?studentInfo.id:''} · Grade ${studentInfo?studentInfo.grade:''} · Section ${studentInfo?studentInfo.section:''} — score recorded.<br>${comment}`;
+  document.getElementById('endScreen').style.display='block';
+  if(pct>=70) launchConfetti(60);
+}
+
+/* ============ CONFETTI ============ */
+function launchConfetti(n=30){
+  const colors=['#E8A33D','#1F8A7A','#E85D4E','#155E56','#F4D06F'];
+  for(let k=0;k<n;k++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.transform=`rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(c);
+    const duration=2200+Math.random()*1200;
+    c.animate([
+      {transform:`translateY(0) rotate(0deg)`, opacity:1},
+      {transform:`translateY(100vh) rotate(${360+Math.random()*360}deg)`, opacity:0.9}
+    ],{duration, easing:'ease-in'});
+    setTimeout(()=>c.remove(), duration);
+  }
+}
+</script>
+</body>
+</html>
